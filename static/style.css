@@ -1,0 +1,23 @@
+body, input, button {background-color: black;
+	color: white;
+	font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+	text-align: center}
+div, .button {padding: 5px}
+.flex-container {display: flex;
+	flex-flow: column wrap;
+	justify-content: center;
+	align-content: center;
+	height: 100%;}
+
+.chat {width: 440px;
+	text-align: left}
+.chat-container {border: 1px solid white;
+	overflow-x: auto;
+	overflow-y: auto;
+	text-align: left;
+	height: 94%;
+	width: 99%}
+.chatbox {width: 94%;
+	text-align: left}
+button {width: 5%}
+#scrollBox {border: 1px solid white}

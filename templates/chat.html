@@ -1,0 +1,58 @@
+<html>
+<head>
+<link rel='stylesheet' href={{ url_for('static', filename='style.css') }}>
+<script src={{ url_for('static', filename='socket.io.js') }}></script>
+</head>
+<body>
+			<div class='chat-container'>
+			</div>
+			<input type=text class='chatbox'>
+			<button onclick='sendmsg()'>Submit</button>
+</body>
+<script>
+	var socket = io()
+	var credentials = {}
+	var chat_container = document.getElementsByClassName('chat-container')[0]
+	function check_scroll() {
+		let t = chat_container
+		let sval = t.scrollHeight - t.clientHeight - t.scrollTop
+		let range = 2
+		if (sval >= -range && sval <= range) {return true}
+		return false
+	}
+	function receivemsg(msg) {
+		let d = document.createElement('div')
+		d.setAttribute('class', 'chat')
+		d.append(msg)
+		let scroll = check_scroll()
+		chat_container.append(d)
+		if (scroll) {
+			let chats = document.getElementsByClassName('chat')
+			chats[chats.length-1].scrollIntoView()
+		}
+		else {chat_container.style.border = '1px solid green'}
+	}
+	function sendmsg() {
+		let field = document.getElementsByClassName('chatbox')[0]
+		let msg = field.value
+			if (msg == '') {return}
+		field.value = ''
+		socket.emit('chatmsg', {token: credentials.token, message: msg})
+	}
+	function login(data) {
+		credentials.token = data.token
+		credentials.user = data.user
+		receivemsg(data.message)
+	}
+
+	socket.on('login', login)
+	socket.emit('join', {user: 'guest', room: 'chat'})
+	document.getElementsByClassName('chatbox')[0].addEventListener('keydown', function (k) {
+		if (k.key == 'Enter') {sendmsg()}
+	});
+	socket.on('receivemsg', receivemsg)
+	chat_container.addEventListener('scroll', function (e) {
+			if (check_scroll()) {chat_container.style.border = '1px solid white'}
+	});
+</script>
+</html>

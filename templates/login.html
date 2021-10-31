@@ -1,0 +1,27 @@
+<html>
+<head>
+<link rel='stylesheet' href={{ url_for('static', filename='style.css') }}>
+</head>
+<body>
+	<div class='flex-container'>
+		<form id='login-form' action='/login_post' method='post' autocomplete='on'>
+			{% if error == 'invalid_credentials' %}
+				<p1 style='color: red'>Invalid credentials</p1>
+			{% else %}
+				<p1></p1>
+			{% endif %}
+			<div>
+				<label for='username'>username: </label>
+				<input form='login-form' type='text' id='username' name='username'>
+			</div>
+			<div>
+				<label for='password'>password: </label>
+				<input form='login-form' type='password' id='password' name='password'>
+			</div>
+		</form>
+		<input class='button' type='submit' value='Login' form='login-form'>
+		<form id='guest-form' action='/login_guest' method='get'></form>
+		<input form='guest-form' class='button' type='submit' value='Login as Guest'>
+	</div>
+</body>
+</html>
