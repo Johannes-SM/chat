@@ -6,13 +6,15 @@
 <body>
 			<div class='chat-container'>
 			</div>
-			<input type=text class='chatbox'>
+			<textarea class='chatbox'></textarea>
 			<button onclick='sendmsg()'>Submit</button>
 </body>
 <script>
 	var socket = io()
 	var credentials = {}
 	var chat_container = document.getElementsByClassName('chat-container')[0]
+	var chatbox = document.getElementsByClassName('chatbox')[0]
+	var shift_down = false
 	function check_scroll() {
 		let t = chat_container
 		let sval = t.scrollHeight - t.clientHeight - t.scrollTop
@@ -33,10 +35,9 @@
 		else {chat_container.style.border = '1px solid green'}
 	}
 	function sendmsg() {
-		let field = document.getElementsByClassName('chatbox')[0]
-		let msg = field.value
-			if (msg == '') {return}
-		field.value = ''
+		let msg = chatbox.value
+		if (msg == '') {return}
+		chatbox.value = ''
 		socket.emit('chatmsg', {token: credentials.token, message: msg})
 	}
 	function login(data) {
@@ -44,11 +45,10 @@
 		credentials.user = data.user
 		receivemsg(data.message)
 	}
-
 	socket.on('login', login)
 	socket.emit('join', {user: 'guest', room: 'chat'})
-	document.getElementsByClassName('chatbox')[0].addEventListener('keydown', function (k) {
-		if (k.key == 'Enter') {sendmsg()}
+	chatbox.addEventListener('keydown', function (k) {
+		if (k.key == 'Enter' && !k.shiftKey) {k.preventDefault(); sendmsg()}
 	});
 	socket.on('receivemsg', receivemsg)
 	chat_container.addEventListener('scroll', function (e) {

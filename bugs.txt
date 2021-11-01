@@ -1,2 +1,1 @@
-case 2: chatting 'a                                                 a'
-feature: sending newlines
+feature: chatbox lengthens to fit text
