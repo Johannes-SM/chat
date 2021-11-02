@@ -46,5 +46,7 @@ if __name__ == '__main__':
     debug = args.get('--debug', False) == 'True'
     host = args.get('--host', None)
     port = int(args.get('--port', 80))
-    print(f'DEBUG: {debug}\nHOST: {host}\nPORT: {port}')
-    socketio.run(app, debug=debug, host=host, port=port)
+    key = args.get('--keyfile', None)
+    cert = args.get('--certfile', None)
+    print(f'DEBUG: {debug}\nHOST: {host}\nPORT: {port}\nKEYFILE: {key}\nCERTFILE: {cert}')
+    socketio.run(app, debug=debug, host=host, port=port, keyfile=key, certfile=cert)
