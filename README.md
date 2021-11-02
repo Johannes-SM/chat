@@ -2,7 +2,7 @@
 * create python virtual environment using requirements.txt
 #### if you want to redirect http clients to https
 * install nginx
-* modify nginx_conf.txt to include your url
+* modify nginx_conf.txt to include your domain
 * add the text in nginx_conf.txt to /etc/nginx/nginx.conf
 * reload nginx using `nginx -s reload` if nginx is already running
 
