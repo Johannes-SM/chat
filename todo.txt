@@ -1,3 +1,2 @@
 feature: chatbox lengthens to fit text
 bug: scrolling down fails with very tall messages
-feature: redirect from http to https
