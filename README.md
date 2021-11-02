@@ -1,6 +1,6 @@
-#Installation
+# Installation
 * create python virtual environment using requirements.txt
 
-##Run
+## Run
 * execute bench1.py
 * pass arguments if desired
