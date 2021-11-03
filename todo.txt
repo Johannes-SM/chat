@@ -1,2 +1,5 @@
 feature: chatbox lengthens to fit text
 bug: scrolling down fails with very tall messages
+considering: remove submit button
+feature: chat persistence
+feature: user accounts
