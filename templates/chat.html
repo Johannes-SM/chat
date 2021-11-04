@@ -35,7 +35,7 @@
 	function sendmsg() {
 		let msg = chatbox.value
 		if (msg == '') {return}
-		chatbox.value = ''
+		chatbox.value = ''; fit()
 		socket.emit('chatmsg', {token: credentials.token, message: msg})
 	}
 	function login(data) {
