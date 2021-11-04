@@ -1,4 +1,3 @@
-feature: chatbox lengthens to fit text
-considering: remove submit button
 feature: user accounts
 feature: load past messages manually
+feature: color usernames

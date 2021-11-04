@@ -7,7 +7,6 @@
 	<div class='chat-container'>
 	</div>
 	<textarea class='chatbox'></textarea>
-	<button onclick='sendmsg()'>Submit</button>
 </body>
 <script>
 	var socket = io()
@@ -44,14 +43,20 @@
 		credentials.user = data.user
 		receivemsg(data.message)
 	}
+	function fit() {
+		chatbox.style.height = ''
+		chatbox.style.height = chatbox.scrollHeight + 5 + 'px'
+	}
 	socket.on('login', login)
 	socket.emit('join', {user: 'guest', room: 'chat'})
 	chatbox.addEventListener('keydown', function (k) {
 		if (k.key == 'Enter' && !k.shiftKey) {k.preventDefault(); sendmsg()}
 	});
+	chatbox.addEventListener('input', function (e) {fit()})
 	socket.on('receivemsg', receivemsg)
 	chat_container.addEventListener('scroll', function (e) {
 			if (check_scroll()) {chat_container.style.border = '1px solid white'}
 	});
+	fit()
 </script>
 </html>
