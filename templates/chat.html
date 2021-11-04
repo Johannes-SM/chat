@@ -4,10 +4,10 @@
 <script src={{ url_for('static', filename='socket.io.js') }}></script>
 </head>
 <body>
-			<div class='chat-container'>
-			</div>
-			<textarea class='chatbox'></textarea>
-			<button onclick='sendmsg()'>Submit</button>
+	<div class='chat-container'>
+	</div>
+	<textarea class='chatbox'></textarea>
+	<button onclick='sendmsg()'>Submit</button>
 </body>
 <script>
 	var socket = io()
@@ -29,8 +29,7 @@
 		let scroll = check_scroll()
 		chat_container.append(d)
 		if (scroll) {
-			let chats = document.getElementsByClassName('chat')
-			chats[chats.length-1].scrollIntoView()
+			chat_container.scrollTop = chat_container.scrollHeight - chat_container.clientHeight
 		}
 		else {chat_container.style.border = '1px solid green'}
 	}

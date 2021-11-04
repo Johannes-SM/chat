@@ -3,8 +3,11 @@ import flask
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
 import sys
 import psycopg2 as p
+import json
 
-conn = p.connect(host='localhost', database='chat', user='flask_user', password='flask_password')
+with open('non_git_stuff/l.json', 'r') as j:
+    d = json.load(j)
+conn = p.connect(host='localhost', database='chat', user=d['user'], password=d['password'])
 cur = conn.cursor()
 app = flask.Flask(__name__)
 socketio = SocketIO(app, logger=True, engineio_logger=True)
