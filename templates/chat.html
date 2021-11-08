@@ -14,7 +14,33 @@
 	var chat_container = document.getElementsByClassName('chat-container')[0]
 	var chatbox = document.getElementsByClassName('chatbox')[0]
 	var shift_down = false
+	var H_SCROLL_LIM = 0.1
+	var H_REQ_NUM = 100
+	var n = 0
 
+	function make_msg(msg) {
+		let d = document.createElement('div')
+		d.setAttribute('class', 'chat')
+		d.append(msg)
+		return d
+	}
+	function find_p() {
+		let t = chat_container
+		return(t.scrollTop/(t.scrollHeight-t.clientHeight))
+	}
+		
+	function load_history(data) {
+		let msgs = data['messages']
+		for (i in msgs) {
+			let msg = msgs[i]
+			let d = make_msg(`${msg[1]}: ${msg[0]}`)
+			chat_container.insertBefore(d, chat_container.firstChild)
+		}
+	}
+
+	function scroll_down() {
+		chat_container.scrollTop = chat_container.scrollHeight - chat_container.clientHeight
+	}
 	function check_scroll() {
 		let t = chat_container
 		let sval = t.scrollHeight - t.clientHeight - t.scrollTop
@@ -23,16 +49,11 @@
 		return false
 	}
 	function receivemsg(msg) {
-		console.log(msg)
-		let d = document.createElement('div')
-		d.setAttribute('class', 'chat')
-		d.append(msg['message'])
-
+		let d = make_msg(msg['message'])
 		let scroll = check_scroll()
 		chat_container.append(d)
-		if (scroll) {
-			chat_container.scrollTop = chat_container.scrollHeight - chat_container.clientHeight
-		}
+		n += 1
+		if (scroll) {scroll_down()}
 		else {chat_container.style.border = '1px solid green'}
 	}
 	function sendmsg() {
@@ -42,7 +63,9 @@
 		socket.emit('chatmsg', {message: msg})
 	}
 	function login(data) {
-		receivemsg(data)
+		let d = make_msg(data['message'])
+		chat_container.append(d)
+		scroll_down()
 	}
 	function fit() {
 		chatbox.style.height = ''
@@ -55,6 +78,7 @@
 	}
 	socket.on('login', login)
 	socket.on('redirect', redirect)
+	socket.on('receive_history', load_history)
 	socket.emit('join', {room: 'chat'})
 	chatbox.addEventListener('keydown', function (k) {
 		if (k.key == 'Enter' && !k.shiftKey) {k.preventDefault(); sendmsg()}
@@ -62,7 +86,13 @@
 	chatbox.addEventListener('input', function (e) {fit()})
 	socket.on('receivemsg', receivemsg)
 	chat_container.addEventListener('scroll', function (e) {
-			if (check_scroll()) {chat_container.style.border = '1px solid white'}
+		if (check_scroll()) {chat_container.style.border = '1px solid white'}
+		if (chat_container.scrollTop == 0) {
+			socket.emit('request_history', {'n' : n, 'req_num' : H_REQ_NUM})
+			chat_container.scrollTop = 1
+			n += H_REQ_NUM
+		}
+		else {}
 	});
 	fit()
 </script>

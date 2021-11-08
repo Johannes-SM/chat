@@ -1,2 +1,3 @@
-feature: load past messages manually
 feature: color usernames
+feature: adjust settings via commmands
+feature: clickable usernames

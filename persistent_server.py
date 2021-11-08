@@ -18,17 +18,17 @@ app.secret_key = d['secret_key']
 socketio = SocketIO(app, logger=True, engineio_logger=True)
 guests = set()
 # number of messages to load when initializing a chat room
-DEFAULT_PAST = 10
+DEFAULT_PAST = 100
 # number of accounts that can be generated per ip address per day
 ACC_PER_IP_PER_DAY_LIM = 100
 # maximum acceptable length for usernames
 NAME_LEN_LIM = 40
 
 # return list of n messages from MESSAGE table
-def fetch_messages(n):
+def fetch_messages(n, rev=True):
     cur.execute('select CONTENT, USERNAME from MESSAGE order by ID desc;')
     stuff = cur.fetchmany(n)
-    stuff.reverse()
+    if rev: stuff.reverse()
     return stuff
 
 # store message in MESSAGE table
@@ -143,7 +143,6 @@ def onjoin(data):
         emit('receivemsg', {'message' : f'{msg[1]}: {msg[0]}'})
     msg = f'@{username} joined the room #{data["room"]}'
     emit('login', {'message' : msg})
-    print(msg)
 
 @socketio.on('chatmsg')
 def delivermsg(data):
@@ -151,7 +150,12 @@ def delivermsg(data):
     msg = f'{username}: {data["message"]}'
     store_message(username = username, message = data['message'])
     socketio.emit('receivemsg', {'message': msg}, to='chat')
-    print(msg)
+
+@socketio.on('request_history')
+def deliver_history(data):
+    n, req_num = data['n'], data['req_num']
+    j_msgs = fetch_messages(n+req_num, rev=False)[n::]
+    emit('receive_history', {'messages' : j_msgs})
 
 if __name__ == '__main__':
     args = {sys.argv[i]:sys.argv[i+1] for i in range(len(sys.argv)) if sys.argv[i][0:2] == '--'}
