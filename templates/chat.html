@@ -4,16 +4,17 @@
 <script src={{ url_for('static', filename='socket.io.js') }}></script>
 </head>
 <body>
-	<div class='chat-container'>
+	<div >
+		<div class='chat-container'></div>
+		<textarea class='chatbox'></textarea>
 	</div>
-	<textarea class='chatbox'></textarea>
 </body>
 <script>
 	var socket = io()
-	var credentials = {}
 	var chat_container = document.getElementsByClassName('chat-container')[0]
 	var chatbox = document.getElementsByClassName('chatbox')[0]
 	var shift_down = false
+
 	function check_scroll() {
 		let t = chat_container
 		let sval = t.scrollHeight - t.clientHeight - t.scrollTop
@@ -22,9 +23,11 @@
 		return false
 	}
 	function receivemsg(msg) {
+		console.log(msg)
 		let d = document.createElement('div')
 		d.setAttribute('class', 'chat')
-		d.append(msg)
+		d.append(msg['message'])
+
 		let scroll = check_scroll()
 		chat_container.append(d)
 		if (scroll) {
@@ -36,19 +39,23 @@
 		let msg = chatbox.value
 		if (msg == '') {return}
 		chatbox.value = ''; fit()
-		socket.emit('chatmsg', {token: credentials.token, message: msg})
+		socket.emit('chatmsg', {message: msg})
 	}
 	function login(data) {
-		credentials.token = data.token
-		credentials.user = data.user
-		receivemsg(data.message)
+		receivemsg(data)
 	}
 	function fit() {
 		chatbox.style.height = ''
-		chatbox.style.height = chatbox.scrollHeight + 5 + 'px'
+		h = chatbox.scrollHeight + 5 + 'px' 
+		chatbox.style.height = h
+	}
+	function redirect(data) {
+		console.log(data)
+		location.href = data['url']
 	}
 	socket.on('login', login)
-	socket.emit('join', {user: 'guest', room: 'chat'})
+	socket.on('redirect', redirect)
+	socket.emit('join', {room: 'chat'})
 	chatbox.addEventListener('keydown', function (k) {
 		if (k.key == 'Enter' && !k.shiftKey) {k.preventDefault(); sendmsg()}
 	});

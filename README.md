@@ -7,8 +7,8 @@
 * reload nginx using `nginx -s reload` if nginx is already running
 #### postgres db
 * follow  https://wiki.archlinux.org/title/PostgreSQL#Installation until you've setup a database
-* I will finish writing this later
+* run `generate_tables.sql` file in your database as a superuser (psql -d database_name -f generate_tables.sql)
 
 ## Run
-* execute bench1.py
+* execute `persistent_server.py`
 * pass arguments as needed

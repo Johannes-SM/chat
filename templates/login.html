@@ -1,14 +1,24 @@
+{% set args = request.args %}
 <html>
 <head>
 <link rel='stylesheet' href={{ url_for('static', filename='style.css') }}>
 </head>
 <body>
+	<a href={{ request.base_url[0:-1]+url_for('disclaimer') }}>important disclaimer</a>
 	<div class='flex-container'>
 		<form id='login-form' action='/login_post' method='post' autocomplete='on'>
-			{% if error == 'invalid_credentials' %}
-				<p1 style='color: red'>Invalid credentials</p1>
-			{% else %}
-				<p1></p1>
+			{% if error == 'invalid_password' %}
+				<p1 style='color: red'>Wrong password</p1>
+			{% elif error == 'account_creation_limit_reached' %}
+				<p1 style='color: red'>Daily signup limit reached</p1>
+			{% elif error == 'account_dne' %}
+				<p1 style='color: red'>Account does not exist</p1>
+			{% elif error == 'invalid_username' %}
+				<p1 style='color: red'>Invalid username<br><br>
+					max length is {{ args.ulim }}<br><br>
+					must start with an <br>
+					alphanumeric character<br><br>
+					must not be an empty string</p1>
 			{% endif %}
 			<div>
 				<label for='username'>username: </label>
@@ -19,8 +29,8 @@
 				<input form='login-form' type='password' id='password' name='password'>
 			</div>
 		</form>
-		<input class='button' type='submit' value='Login' form='login-form'>
-		<form id='guest-form' action='/login_guest' method='get'></form>
+		<input class='button' type='submit' value='Login/Sign up' form='login-form'>
+		<form style='display: none' id='guest-form' action='/login_guest' method='get'></form>
 		<input form='guest-form' class='button' type='submit' value='Login as Guest'>
 	</div>
 </body>
