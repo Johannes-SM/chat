@@ -17,6 +17,7 @@
 	var H_SCROLL_LIM = 0.1
 	var H_REQ_NUM = 100
 	var n = 0
+	var MSG_LEN_LIM = 1500
 
 	function make_msg(msg) {
 		let d = document.createElement('div')
@@ -24,11 +25,6 @@
 		d.append(msg)
 		return d
 	}
-	function find_p() {
-		let t = chat_container
-		return(t.scrollTop/(t.scrollHeight-t.clientHeight))
-	}
-		
 	function load_history(data) {
 		let msgs = data['messages']
 		for (i in msgs) {
@@ -37,7 +33,6 @@
 			chat_container.insertBefore(d, chat_container.firstChild)
 		}
 	}
-
 	function scroll_down() {
 		chat_container.scrollTop = chat_container.scrollHeight - chat_container.clientHeight
 	}
@@ -71,6 +66,7 @@
 		chatbox.style.height = ''
 		h = chatbox.scrollHeight + 5 + 'px' 
 		chatbox.style.height = h
+		if (chatbox.value.length > MSG_LEN_LIM) {chatbox.value = chatbox.value.slice(0, MSG_LEN_LIM)}
 	}
 	function redirect(data) {
 		console.log(data)
@@ -92,7 +88,6 @@
 			chat_container.scrollTop = 1
 			n += H_REQ_NUM
 		}
-		else {}
 	});
 	fit()
 </script>

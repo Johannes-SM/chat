@@ -23,6 +23,7 @@ DEFAULT_PAST = 100
 ACC_PER_IP_PER_DAY_LIM = 100
 # maximum acceptable length for usernames
 NAME_LEN_LIM = 40
+MSG_LEN_LIM = 1500
 
 # return list of n messages from MESSAGE table
 def fetch_messages(n, rev=True):
@@ -51,8 +52,10 @@ def can_create(ip):
         conn.commit()
         return True 
     # check how many accounts are associated with the IP. 
-    cur.execute('select COUNT(*) from ACCOUNT where IPID=%s', (_id[0][0],))
+    values = (_id[0][0], get_gmtime())
+    cur.execute('select COUNT(*) from ACCOUNT where IPID=%s and extract(days from %s-DATE_CREATED)<1', values)
     r = cur.fetchall()[0][0]
+    print('\n\n', r)
     # return False if sign up limit exceeded
     if r >= ACC_PER_IP_PER_DAY_LIM:
         return False
@@ -147,6 +150,8 @@ def onjoin(data):
 @socketio.on('chatmsg')
 def delivermsg(data):
     username = flask.session['username']
+    if len(data['message']) > MSG_LEN_LIM: 
+        data['message'] = data['message'][0:MSG_LEN_LIM]
     msg = f'{username}: {data["message"]}'
     store_message(username = username, message = data['message'])
     socketio.emit('receivemsg', {'message': msg}, to='chat')
