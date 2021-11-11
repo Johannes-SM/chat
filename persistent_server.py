@@ -13,6 +13,8 @@ with open('non_git_stuff/l.json', 'r') as j:
     d = json.load(j)
 conn = p.connect(host='localhost', database='chat', user=d['user'], password=d['password'])
 cur = conn.cursor()
+cur.execute('set time zone "UTC"')
+conn.commit()
 app = flask.Flask(__name__)
 app.secret_key = d['secret_key']
 socketio = SocketIO(app, logger=True, engineio_logger=True)
@@ -24,22 +26,31 @@ ACC_PER_IP_PER_DAY_LIM = 100
 # maximum acceptable length for usernames
 NAME_LEN_LIM = 40
 MSG_LEN_LIM = 1500
+# period in seconds
+PERIOD = 5
+RATE_LIMIT = 4
+# seconds in a day
+SEC_DAY = 60 * 60 * 24
 
 # return list of n messages from MESSAGE table
 def fetch_messages(n, rev=True):
     cur.execute('select CONTENT, USERNAME from MESSAGE order by ID desc;')
     stuff = cur.fetchmany(n)
+    conn.commit()
     if rev: stuff.reverse()
     return stuff
 
 # store message in MESSAGE table
 def store_message(username, message):
-    cur.execute('insert into MESSAGE (content, username) values (%s, %s);', (message, username))
+    values = (message, username)
+    print('\n store_message', values)
+    cur.execute('insert into MESSAGE (content, username, date_sent) values (%s, %s, NOW());', values)
     conn.commit()
 
 # produce list of IDs associated with an IP. There should only be 1 or 0 IDs per IP address. 
 def ip_to_id(ip):
     cur.execute('select ID from ID_IP where IP=%s;', (ip,))
+    conn.commit()
     return cur.fetchall()
 
 # return True if IP address is permitted to make an account. Return False otherwise. 
@@ -52,9 +63,10 @@ def can_create(ip):
         conn.commit()
         return True 
     # check how many accounts are associated with the IP. 
-    values = (_id[0][0], get_gmtime())
-    cur.execute('select COUNT(*) from ACCOUNT where IPID=%s and extract(days from %s-DATE_CREATED)<1', values)
+    values = (_id[0][0], SEC_DAY)
+    cur.execute('select COUNT(*) from ACCOUNT where IPID=%s and extract(epoch from NOW()-DATE_CREATED)<=%s', values)
     r = cur.fetchall()[0][0]
+    conn.commit()
     print('\n\n', r)
     # return False if sign up limit exceeded
     if r >= ACC_PER_IP_PER_DAY_LIM:
@@ -70,6 +82,7 @@ def get_gmtime():
 # return True if account with username exists, otherwise return False
 def check_acc_exists(username): 
     cur.execute('select COUNT(*) from ACCOUNT where USERNAME=%s', (username,))
+    conn.commit()
     if cur.fetchall()[0][0] > 0: return True
     return False
 
@@ -89,18 +102,30 @@ def create_account(username, password, ip):
     slt = str(uuid.uuid4())
     # create new account and return True
     h = hl.sha256(f'{password}{slt}'.encode()).hexdigest()
-    args = (username, h, get_gmtime(), ip_to_id(ip)[0][0], slt)
-    cur.execute('insert into ACCOUNT values (DEFAULT, %s, %s, %s, %s, %s)', args)
+    args = (username, h, ip_to_id(ip)[0][0], slt)
+    cur.execute('insert into ACCOUNT values (DEFAULT, %s, %s, NOW(), %s, %s, DEFAULT)', args)
     conn.commit()
     return True
 
 # Attempt to login client given a username and password
 def account_login(username, password):
     cur.execute('select PASSWORD, SALT from ACCOUNT where USERNAME=%s;', (username,))
+    conn.commit()
     h, s = cur.fetchall()[0]
     match = hl.sha256(f'{password}{s}'.encode()).hexdigest() == h
     if match: return True
     return False
+
+def check_spam(username):
+    values = (username, PERIOD)
+    cur.execute('select (extract(epoch from NOW())-SEC_SENT) from MESSAGE \
+                 where USERNAME=%s and (extract(epoch from NOW())-SEC_SENT)<=%s \
+                 and (extract(epoch from NOW())-SEC_SENT)>0 \
+                 order by ID asc', values)
+    conn.commit()
+    a = cur.fetchall()
+    print('\n', a)
+    return a
 
 @app.route("/")
 def login():
@@ -150,6 +175,11 @@ def onjoin(data):
 @socketio.on('chatmsg')
 def delivermsg(data):
     username = flask.session['username']
+    a = check_spam(username)
+    if len(a) > RATE_LIMIT: 
+        emit('notification', {'type' : 'spam', \
+             'notif' : f'wait {PERIOD-a[0][0]} before sending another message', 'msg_content' : data['message']})
+        return
     if len(data['message']) > MSG_LEN_LIM: 
         data['message'] = data['message'][0:MSG_LEN_LIM]
     msg = f'{username}: {data["message"]}'

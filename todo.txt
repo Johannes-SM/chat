@@ -1,3 +1,5 @@
 feature: color usernames
 feature: adjust settings via commmands
-feature: clickable usernames
+feature: clickable username
+bug: logging ip when username is invalid
+feature: blocking accounts and IDs

@@ -63,18 +63,29 @@
 		scroll_down()
 	}
 	function fit() {
+		if (chatbox.value.length > MSG_LEN_LIM) {chatbox.value = chatbox.value.slice(0, MSG_LEN_LIM)}
 		chatbox.style.height = ''
 		h = chatbox.scrollHeight + 5 + 'px' 
 		chatbox.style.height = h
-		if (chatbox.value.length > MSG_LEN_LIM) {chatbox.value = chatbox.value.slice(0, MSG_LEN_LIM)}
 	}
 	function redirect(data) {
 		console.log(data)
 		location.href = data['url']
 	}
+	function receive_notification(data) {
+		let d = make_msg(data['notif'])
+		d.setAttribute('style', 'color: red')
+		if (data['type'] = 'spam') {
+			chatbox.value = data['msg_content']
+		}
+		chat_container.append(d)
+		scroll_down()
+	}
+
 	socket.on('login', login)
 	socket.on('redirect', redirect)
 	socket.on('receive_history', load_history)
+	socket.on('notification', receive_notification)
 	socket.emit('join', {room: 'chat'})
 	chatbox.addEventListener('keydown', function (k) {
 		if (k.key == 'Enter' && !k.shiftKey) {k.preventDefault(); sendmsg()}

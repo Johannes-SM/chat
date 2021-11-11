@@ -30,7 +30,8 @@ CREATE TABLE public.account (
     password text NOT NULL,
     date_created timestamp without time zone NOT NULL,
     ipid text NOT NULL,
-    salt text
+    salt text NOT NULL,
+    sec_created bigint GENERATED ALWAYS AS (date_part('epoch'::text, date_created)) STORED
 );
 
 
@@ -70,7 +71,9 @@ CREATE TABLE public.id_ip (
 CREATE TABLE public.message (
     id bigint NOT NULL,
     content text NOT NULL,
-    username text NOT NULL
+    username text NOT NULL,
+    date_sent timestamp without time zone NOT NULL,
+    sec_sent bigint GENERATED ALWAYS AS (date_part('epoch'::text, date_sent)) STORED
 );
 
 
@@ -94,6 +97,37 @@ ALTER SEQUENCE public.message_id_seq OWNED BY public.message.id;
 
 
 --
+-- Name: tmessage; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.tmessage (
+    id bigint NOT NULL,
+    content text NOT NULL,
+    username text NOT NULL,
+    date_sent timestamp without time zone NOT NULL
+);
+
+
+--
+-- Name: tmessage_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.tmessage_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: tmessage_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.tmessage_id_seq OWNED BY public.tmessage.id;
+
+
+--
 -- Name: account id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -105,6 +139,13 @@ ALTER TABLE ONLY public.account ALTER COLUMN id SET DEFAULT nextval('public.acco
 --
 
 ALTER TABLE ONLY public.message ALTER COLUMN id SET DEFAULT nextval('public.message_id_seq'::regclass);
+
+
+--
+-- Name: tmessage id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tmessage ALTER COLUMN id SET DEFAULT nextval('public.tmessage_id_seq'::regclass);
 
 
 --
@@ -161,6 +202,14 @@ ALTER TABLE ONLY public.id_ip
 
 ALTER TABLE ONLY public.message
     ADD CONSTRAINT message_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: tmessage tmessage_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.tmessage
+    ADD CONSTRAINT tmessage_pkey PRIMARY KEY (id);
 
 
 --
