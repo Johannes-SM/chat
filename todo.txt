@@ -1,5 +1,7 @@
 feature: color usernames
 feature: adjust settings via commmands
 feature: clickable username
-bug: logging ip when username is invalid
 feature: blocking accounts and IDs
+db feature: proper primary key for ID_IP + foreign key for ACCOUNT
+optimization: use intervals instead of taking difference for timestamp queries
+

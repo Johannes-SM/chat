@@ -53,14 +53,20 @@ def ip_to_id(ip):
     conn.commit()
     return cur.fetchall()
 
+# register IP in ID_IP table
+def make_ipid(ip):
+    # return if IP already registed in ID_IP table
+    if len(ip_to_id(ip)) > 0:
+        return
+    cur.execute('insert into ID_IP values (gen_random_uuid(), %s)', (ip,))
+    conn.commit()
+
 # return True if IP address is permitted to make an account. Return False otherwise. 
 def can_create(ip):
     _id = ip_to_id(ip)
     # check if IP has been registered in ID_IP table
     if len(_id) < 1: 
-        # generate unique ID if IP does not exist in ID_IP table and return True
-        cur.execute('insert into ID_IP values (gen_random_uuid(), %s)', (ip,))
-        conn.commit()
+        # return True if IP has not been registered in ID_IP table
         return True 
     # check how many accounts are associated with the IP. 
     values = (_id[0][0], SEC_DAY)
@@ -98,6 +104,8 @@ def create_account(username, password, ip):
     # return False if username does not meet requirements
     if not validate_username(username): return False
 
+    # register IP in ID_IP table
+    make_ipid(ip)
     # generate salt and store in `slt`
     slt = str(uuid.uuid4())
     # create new account and return True
