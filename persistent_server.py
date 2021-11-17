@@ -31,6 +31,7 @@ PERIOD = 5
 RATE_LIMIT = 4
 # seconds in a day
 SEC_DAY = 60 * 60 * 24
+CMD_PREFIX = '/'
 
 # return list of n messages from MESSAGE table
 def fetch_messages(n, rev=True):
@@ -135,6 +136,12 @@ def check_spam(username):
     print('\n', a)
     return a
 
+def cmd_parse(cmd):
+    invalid_cmd_msg = 'Invalid command'
+    args = cmd.split(' ')
+    if args[0] not in ['swag']: return invalid_cmd_msg
+    else: return f'{args[0]} is a valid command'
+
 @app.route("/")
 def login():
     return flask.render_template('login.html', error=escape(flask.request.args.get('error', '')))
@@ -176,12 +183,16 @@ def onjoin(data):
         emit('redirect', {'url' : flask.url_for('guest_login')})
     j_msgs = fetch_messages(DEFAULT_PAST)
     for msg in j_msgs:
-        emit('receivemsg', {'message' : f'{msg[1]}: {msg[0]}'})
+        emit('receivemsg', {'msg_content': msg[0], 'msg_sender': msg[1]})
     msg = f'@{username} joined the room #{data["room"]}'
     emit('login', {'message' : msg})
 
 @socketio.on('chatmsg')
 def delivermsg(data):
+    if data['message'][0] == CMD_PREFIX:
+        notif = cmd_parse(data['message'][1::])
+        emit('notification', {'type': 'command', 'notif': notif, 'msg_content': data['message']})
+        return
     username = flask.session['username']
     a = check_spam(username)
     if len(a) > RATE_LIMIT: 
@@ -190,9 +201,9 @@ def delivermsg(data):
         return
     if len(data['message']) > MSG_LEN_LIM: 
         data['message'] = data['message'][0:MSG_LEN_LIM]
-    msg = f'{username}: {data["message"]}'
+    msg = data['message']
     store_message(username = username, message = data['message'])
-    socketio.emit('receivemsg', {'message': msg}, to='chat')
+    socketio.emit('receivemsg', {'msg_content': msg, 'msg_sender': username}, to='chat')
 
 @socketio.on('request_history')
 def deliver_history(data):

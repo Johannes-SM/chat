@@ -43,8 +43,9 @@
 		if (sval >= -range && sval <= range) {return true}
 		return false
 	}
-	function receivemsg(msg) {
-		let d = make_msg(msg['message'])
+	function receivemsg(data) {
+		let msg = `${data['msg_sender']}: ${data['msg_content']}`
+		let d = make_msg(msg)
 		let scroll = check_scroll()
 		chat_container.append(d)
 		n += 1
@@ -75,9 +76,7 @@
 	function receive_notification(data) {
 		let d = make_msg(data['notif'])
 		d.setAttribute('style', 'color: red')
-		if (data['type'] = 'spam') {
-			chatbox.value = data['msg_content']
-		}
+		chatbox.value = data['msg_content']
 		chat_container.append(d)
 		scroll_down()
 	}
