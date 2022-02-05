@@ -6,3 +6,4 @@ http {
 			return 301 https://YOUR_DOMAIN_HERE$request_uri;
 		}
 	}
+}

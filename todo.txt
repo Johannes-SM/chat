@@ -1,7 +1,6 @@
-feature: color usernames
 feature: adjust settings via commmands
-feature: clickable username
 feature: blocking accounts and IDs
 db feature: proper primary key for ID_IP + foreign key for ACCOUNT
 optimization: use intervals instead of taking difference for timestamp queries
 feature: text wrapping in messages
+bug: fix being able to send messages through spam check

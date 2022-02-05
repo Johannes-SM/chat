@@ -19,17 +19,30 @@
 	var n = 0
 	var MSG_LEN_LIM = 1500
 
-	function make_msg(msg) {
+	function make_msg(sender, content) {
 		let d = document.createElement('div')
 		d.setAttribute('class', 'chat')
-		d.append(msg)
+		if (sender != undefined) {
+			let b = document.createElement('button')
+			b.setAttribute('class', 'sender')
+			b.setAttribute('onclick', `place('${sender}')`)
+			b.append(sender)
+			d.append(b)
+			d.append(`: ${content}`)
+			return d
+		}
+		d.append(content)
 		return d
+	}
+	function place(name) {
+		chatbox.value += name
+		fit()
 	}
 	function load_history(data) {
 		let msgs = data['messages']
 		for (i in msgs) {
 			let msg = msgs[i]
-			let d = make_msg(`${msg[1]}: ${msg[0]}`)
+			let d = make_msg(msg[1], msg[0])
 			chat_container.insertBefore(d, chat_container.firstChild)
 		}
 	}
@@ -44,8 +57,8 @@
 		return false
 	}
 	function receivemsg(data) {
-		let msg = `${data['msg_sender']}: ${data['msg_content']}`
-		let d = make_msg(msg)
+		//let msg = `${data['msg_sender']}: ${data['msg_content']}`
+		let d = make_msg(data['msg_sender'], data['msg_content'])
 		let scroll = check_scroll()
 		chat_container.append(d)
 		n += 1
@@ -59,7 +72,7 @@
 		socket.emit('chatmsg', {message: msg})
 	}
 	function login(data) {
-		let d = make_msg(data['message'])
+		let d = make_msg(undefined, data['message'])
 		chat_container.append(d)
 		scroll_down()
 	}
@@ -74,7 +87,7 @@
 		location.href = data['url']
 	}
 	function receive_notification(data) {
-		let d = make_msg(data['notif'])
+		let d = make_msg(undefined, data['notif'])
 		d.setAttribute('style', 'color: red')
 		chatbox.value = data['msg_content']
 		chat_container.append(d)
