@@ -152,6 +152,7 @@ def disclaimer():
 
 @app.route('/login_post', methods=['POST'])
 def verify():
+    socketio.sleep()
     data, ip = flask.request.form, flask.request.remote_addr
     err = False
     if not check_acc_exists(username = data['username']):
@@ -189,6 +190,7 @@ def onjoin(data):
 
 @socketio.on('chatmsg')
 def delivermsg(data):
+    socketio.sleep()
     if data['message'][0] == CMD_PREFIX:
         notif = cmd_parse(data['message'][1::])
         emit('notification', {'type': 'command', 'notif': notif, 'msg_content': data['message']})
