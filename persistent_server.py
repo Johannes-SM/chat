@@ -59,7 +59,7 @@ def make_ipid(ip):
     # return if IP already registed in ID_IP table
     if len(ip_to_id(ip)) > 0:
         return
-    cur.execute('insert into ID_IP values (gen_random_uuid(), %s)', (ip,))
+    cur.execute('insert into ID_IP (IP) values (%s)', (ip,))
     conn.commit()
 
 # return True if IP address is permitted to make an account. Return False otherwise. 
@@ -112,7 +112,8 @@ def create_account(username, password, ip):
     # create new account and return True
     h = hl.sha256(f'{password}{slt}'.encode()).hexdigest()
     args = (username, h, ip_to_id(ip)[0][0], slt)
-    cur.execute('insert into ACCOUNT values (DEFAULT, %s, %s, NOW(), %s, %s, DEFAULT)', args)
+    cur.execute('insert into ACCOUNT (USERNAME, PASSWORD, DATE_CREATED, IPID, SALT) \
+                 values (%s, %s, NOW(), %s, %s)', args)
     conn.commit()
     return True
 

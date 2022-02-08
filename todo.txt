@@ -1,6 +1,6 @@
 feature: adjust settings via commmands
 feature: blocking accounts and IDs
-db feature: proper primary key for ID_IP + foreign key for ACCOUNT
 optimization: use intervals instead of taking difference for timestamp queries
 feature: text wrapping in messages
 feature: add support for multiple chat rooms
+security: switch to using up-to-date libraries
