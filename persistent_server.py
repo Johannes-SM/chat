@@ -32,6 +32,7 @@ RATE_LIMIT = 4
 # seconds in a day
 SEC_DAY = 60 * 60 * 24
 CMD_PREFIX = '/'
+IP_SALT = d['ip_salt']
 
 # return list of n messages from MESSAGE table
 def fetch_messages(n, rev=True):
@@ -50,7 +51,9 @@ def store_message(username, message):
 
 # produce list of IDs associated with an IP. There should only be 1 or 0 IDs per IP address. 
 def ip_to_id(ip):
-    cur.execute('select ID from ID_IP where IP=%s;', (ip,))
+    # hash and salt IP
+    h = hl.sha256(f'{ip}{IP_SALT}'.encode()).hexdigest()
+    cur.execute('select ID from ID_IP where IP=%s;', (h,))
     conn.commit()
     return cur.fetchall()
 
@@ -59,7 +62,9 @@ def make_ipid(ip):
     # return if IP already registed in ID_IP table
     if len(ip_to_id(ip)) > 0:
         return
-    cur.execute('insert into ID_IP (IP) values (%s)', (ip,))
+    # hash and salt IP
+    h = hl.sha256(f'{ip}{IP_SALT}'.encode()).hexdigest()
+    cur.execute('insert into ID_IP (IP) values (%s)', (h,))
     conn.commit()
 
 # return True if IP address is permitted to make an account. Return False otherwise. 
